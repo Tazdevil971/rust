@@ -210,11 +210,30 @@ pub trait FileExt {
 
 #[stable(feature = "file_offset", since = "1.15.0")]
 impl FileExt for fs::File {
+    #[cfg(not(target_os = "miosix"))]
     fn read_at(&self, buf: &mut [u8], offset: u64) -> io::Result<usize> {
         self.as_inner().read_at(buf, offset)
     }
+
+    #[cfg(target_os = "miosix")]
+    fn read_at(&self, _buf: &mut [u8], _offset: u64) -> io::Result<usize> {
+        Err(io::Error::new_const(
+            io::ErrorKind::Other, 
+            &"Operation not supported on miosix"
+        ))
+    }
+
+    #[cfg(not(target_os = "miosix"))]
     fn write_at(&self, buf: &[u8], offset: u64) -> io::Result<usize> {
-        self.as_inner().write_at(buf, offset)
+        self.as_inner().write_at(buf, offset)        
+    }
+
+    #[cfg(target_os = "miosix")]
+    fn write_at(&self, _buf: &[u8], _offset: u64) -> io::Result<usize> {
+        Err(io::Error::new_const(
+            io::ErrorKind::Other, 
+            &"Operation not supported on miosix"
+        ))
     }
 }
 

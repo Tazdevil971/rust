@@ -18,7 +18,8 @@ pub fn hashmap_random_keys() -> (u64, u64) {
     not(target_os = "freebsd"),
     not(target_os = "netbsd"),
     not(target_os = "fuchsia"),
-    not(target_os = "redox")
+    not(target_os = "redox"),
+    not(target_os = "miosix")
 ))]
 mod imp {
     use crate::fs::File;
@@ -235,5 +236,33 @@ mod imp {
         // Open rand:, read from it, and close it again.
         let mut file = File::open("rand:").expect("failed to open rand:");
         file.read_exact(v).expect("failed to read rand:")
+    }
+}
+
+#[cfg(target_os = "miosix")]
+mod imp {
+    /// Opaque type
+    type HardwareRng = libc::c_void;
+
+    extern "C" {
+        #![allow(non_snake_case)]
+
+        #[link_name = "_ZN6miosix11HardwareRng8instanceEv"]
+        fn HardwareRng_instance() -> *mut HardwareRng;
+
+        #[link_name = "_ZN6miosix11HardwareRng3getEPvj"]
+        fn HardwareRng_get(
+            this: *mut HardwareRng,
+            buf: *mut libc::c_void,
+            size: libc::c_uint
+        );
+    }
+
+    pub fn fill_bytes(v: &mut [u8]) {
+        // Use hardware timer to do it
+        unsafe {
+            let rng = HardwareRng_instance();
+            HardwareRng_get(rng, v.as_mut_ptr().cast(), v.len() as libc::c_uint);
+        }
     }
 }

@@ -61,6 +61,7 @@ const fn max_iov() -> usize {
     target_os = "macos",
     target_os = "netbsd",
     target_os = "openbsd",
+    target_os = "miosix",
 )))]
 const fn max_iov() -> usize {
     16 // The minimum value required by POSIX.
@@ -91,6 +92,7 @@ impl FileDesc {
         Ok(ret as usize)
     }
 
+    #[cfg(not(target_os = "miosix"))]
     pub fn read_vectored(&self, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
         let ret = cvt(unsafe {
             libc::readv(
@@ -102,9 +104,15 @@ impl FileDesc {
         Ok(ret as usize)
     }
 
+    #[cfg(target_os = "miosix")]
+    pub fn read_vectored(&self, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+        // Miosix doesn't support vectored IO
+        crate::io::default_read_vectored(|b| self.read(b), bufs)
+    }
+
     #[inline]
     pub fn is_read_vectored(&self) -> bool {
-        true
+        !cfg!(target_os = "miosix")
     }
 
     pub fn read_to_end(&self, buf: &mut Vec<u8>) -> io::Result<usize> {
@@ -112,6 +120,7 @@ impl FileDesc {
         (&mut me).read_to_end(buf)
     }
 
+    #[cfg(not(target_os = "miosix"))]
     pub fn read_at(&self, buf: &mut [u8], offset: u64) -> io::Result<usize> {
         #[cfg(target_os = "android")]
         use super::android::cvt_pread64;
@@ -148,6 +157,7 @@ impl FileDesc {
         Ok(ret as usize)
     }
 
+    #[cfg(not(target_os = "miosix"))]
     pub fn write_vectored(&self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
         let ret = cvt(unsafe {
             libc::writev(
@@ -159,11 +169,18 @@ impl FileDesc {
         Ok(ret as usize)
     }
 
-    #[inline]
-    pub fn is_write_vectored(&self) -> bool {
-        true
+    #[cfg(target_os = "miosix")]
+    pub fn write_vectored(&self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+        // Miosix doesn't support vectored IO
+        crate::io::default_write_vectored(|b| self.write(b), bufs)
     }
 
+    #[inline]
+    pub fn is_write_vectored(&self) -> bool {
+        !cfg!(target_os = "miosix")
+    }
+
+    #[cfg(not(target_os = "miosix"))]
     pub fn write_at(&self, buf: &[u8], offset: u64) -> io::Result<usize> {
         #[cfg(target_os = "android")]
         use super::android::cvt_pwrite64;
@@ -216,6 +233,7 @@ impl FileDesc {
             Ok(())
         }
     }
+
     #[cfg(any(
         target_env = "newlib",
         target_os = "solaris",

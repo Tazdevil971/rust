@@ -1,17 +1,23 @@
-#![allow(missing_docs, nonstandard_style)]
+#![allow(missing_docs, nonstandard_style, dead_code)]
 
 use crate::io::ErrorKind;
 
 pub use self::rand::hashmap_random_keys;
 pub use libc::strlen;
 
+// Miosix doesn't support dlfcn
+#[cfg(not(target_os = "miosix"))]
 #[macro_use]
 pub mod weak;
+
+#[cfg(target_os = "miosix")]
+pub use miosix::*;
 
 pub mod alloc;
 pub mod android;
 pub mod args;
 pub mod cmath;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/condvar.rs")]
 pub mod condvar;
 pub mod env;
 pub mod ext;
@@ -23,28 +29,37 @@ pub mod io;
 pub mod kernel_copy;
 #[cfg(target_os = "l4re")]
 mod l4re;
+#[cfg(target_os = "miosix")]
+mod miosix;
 pub mod memchr;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/mutex.rs")]
 pub mod mutex;
 #[cfg(not(target_os = "l4re"))]
+#[cfg_attr(target_os = "miosix", path = "../unsupported/net.rs")]
 pub mod net;
 #[cfg(target_os = "l4re")]
 pub use self::l4re::net;
 pub mod os;
 pub mod path;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/pipe.rs")]
 pub mod pipe;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/process.rs")]
 pub mod process;
 pub mod rand;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/rwlock.rs")]
 pub mod rwlock;
 pub mod stack_overflow;
 pub mod stdio;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/thread.rs")]
 pub mod thread;
 pub mod thread_local_dtor;
+#[cfg_attr(target_os = "miosix", path = "../unsupported/thread_local_key.rs")]
 pub mod thread_local_key;
 pub mod time;
 
 pub use crate::sys_common::os_str_bytes as os_str;
 
-#[cfg(not(test))]
+#[cfg(not(any(test, target_os = "miosix")))]
 pub fn init() {
     // The standard streams might be closed on application startup. To prevent
     // std::io::{stdin, stdout,stderr} objects from using other unrelated file
@@ -126,6 +141,11 @@ pub fn init() {
     }
     #[cfg(any(target_os = "emscripten", target_os = "fuchsia"))]
     unsafe fn reset_sigpipe() {}
+}
+
+#[cfg(target_os = "miosix")]
+pub fn init() {
+    // Init should never be called on miosix
 }
 
 #[cfg(target_os = "android")]

@@ -2,7 +2,7 @@
 
 use std::process::ExitStatus;
 
-#[cfg(not(unix))]
+/*#[cfg(not(unix))]
 pub fn get_exit_code(status: ExitStatus) -> Result<i32, String> {
     status.code().ok_or_else(|| "received no exit code from child process".into())
 }
@@ -17,4 +17,9 @@ pub fn get_exit_code(status: ExitStatus) -> Result<i32, String> {
             None => Err("child process exited with unknown signal".into()),
         },
     }
+}*/
+
+// FIXME: Miosix doesn't support extended ExitStatus yet, fix me!
+pub fn get_exit_code(status: ExitStatus) -> Result<i32, String> {
+    status.code().ok_or("received no exit code from child process".into())
 }

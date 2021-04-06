@@ -62,15 +62,20 @@ cfg_if::cfg_if! {
         use crate::os::redox as platform;
         #[cfg(target_os = "solaris")]
         use crate::os::solaris as platform;
+        #[cfg(target_os = "miosix")]
+        use crate::os::miosix as platform;
     }
 }
 
 pub mod ffi;
 pub mod fs;
 pub mod io;
+#[cfg(not(target_os = "miosix"))]
 pub mod net;
+#[cfg(not(target_os = "miosix"))]
 pub mod process;
 pub mod raw;
+#[cfg(not(target_os = "miosix"))]
 pub mod thread;
 
 #[unstable(feature = "peer_credentials_unix_socket", issue = "42839", reason = "unstable")]
@@ -107,8 +112,10 @@ pub mod prelude {
     pub use super::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
     #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
+    #[cfg(not(target_os = "miosix"))]
     pub use super::process::{CommandExt, ExitStatusExt};
     #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
+    #[cfg(not(target_os = "miosix"))]
     pub use super::thread::JoinHandleExt;
 }

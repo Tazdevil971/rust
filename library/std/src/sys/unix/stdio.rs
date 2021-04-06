@@ -23,7 +23,7 @@ impl io::Read for Stdin {
 
     #[inline]
     fn is_read_vectored(&self) -> bool {
-        true
+        ManuallyDrop::new(FileDesc::new(libc::STDIN_FILENO)).is_read_vectored()
     }
 }
 
@@ -44,7 +44,7 @@ impl io::Write for Stdout {
 
     #[inline]
     fn is_write_vectored(&self) -> bool {
-        true
+        ManuallyDrop::new(FileDesc::new(libc::STDOUT_FILENO)).is_read_vectored()
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -69,7 +69,7 @@ impl io::Write for Stderr {
 
     #[inline]
     fn is_write_vectored(&self) -> bool {
-        true
+        ManuallyDrop::new(FileDesc::new(libc::STDERR_FILENO)).is_read_vectored()
     }
 
     fn flush(&mut self) -> io::Result<()> {

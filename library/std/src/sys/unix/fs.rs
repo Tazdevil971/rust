@@ -25,7 +25,8 @@ use libc::fstatat64;
     target_os = "illumos",
     target_os = "l4re",
     target_os = "fuchsia",
-    target_os = "redox"
+    target_os = "redox",
+    target_os = "miosix",
 )))]
 use libc::readdir_r as readdir64_r;
 #[cfg(target_os = "android")]
@@ -190,6 +191,7 @@ pub struct ReadDir {
         target_os = "illumos",
         target_os = "fuchsia",
         target_os = "redox",
+        target_os = "miosix",
     )))]
     end_of_stream: bool,
 }
@@ -210,7 +212,8 @@ pub struct DirEntry {
         target_os = "solaris",
         target_os = "illumos",
         target_os = "fuchsia",
-        target_os = "redox"
+        target_os = "redox",
+        target_os = "miosix"
     ))]
     name: Box<[u8]>,
 }
@@ -297,7 +300,10 @@ impl FileAttr {
 
 #[cfg(not(target_os = "netbsd"))]
 impl FileAttr {
-    #[cfg(not(target_os = "vxworks"))]
+    #[cfg(not(any(
+        target_os = "vxworks",
+        target_os = "miosix"
+    )))]
     pub fn modified(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::from(libc::timespec {
             tv_sec: self.stat.st_mtime as libc::time_t,
@@ -305,7 +311,10 @@ impl FileAttr {
         }))
     }
 
-    #[cfg(target_os = "vxworks")]
+    #[cfg(any(
+        target_os = "vxworks",
+        target_os = "miosix"
+    ))]
     pub fn modified(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::from(libc::timespec {
             tv_sec: self.stat.st_mtime as libc::time_t,
@@ -313,7 +322,10 @@ impl FileAttr {
         }))
     }
 
-    #[cfg(not(target_os = "vxworks"))]
+    #[cfg(not(any(
+        target_os = "vxworks",
+        target_os = "miosix"
+    )))]
     pub fn accessed(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::from(libc::timespec {
             tv_sec: self.stat.st_atime as libc::time_t,
@@ -321,7 +333,10 @@ impl FileAttr {
         }))
     }
 
-    #[cfg(target_os = "vxworks")]
+    #[cfg(any(
+        target_os = "vxworks",
+        target_os = "miosix"
+    ))]
     pub fn accessed(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::from(libc::timespec {
             tv_sec: self.stat.st_atime as libc::time_t,
@@ -436,7 +451,8 @@ impl Iterator for ReadDir {
         target_os = "solaris",
         target_os = "fuchsia",
         target_os = "redox",
-        target_os = "illumos"
+        target_os = "illumos",
+        target_os = "miosix",
     ))]
     fn next(&mut self) -> Option<io::Result<DirEntry>> {
         use crate::slice;
@@ -479,7 +495,8 @@ impl Iterator for ReadDir {
         target_os = "solaris",
         target_os = "fuchsia",
         target_os = "redox",
-        target_os = "illumos"
+        target_os = "illumos",
+        target_os = "miosix"
     )))]
     fn next(&mut self) -> Option<io::Result<DirEntry>> {
         if self.end_of_stream {
@@ -594,7 +611,8 @@ impl DirEntry {
         target_os = "l4re",
         target_os = "fuchsia",
         target_os = "redox",
-        target_os = "vxworks"
+        target_os = "vxworks",
+        target_os = "miosix"
     ))]
     pub fn ino(&self) -> u64 {
         self.entry.d_ino as u64
@@ -633,7 +651,8 @@ impl DirEntry {
         target_os = "emscripten",
         target_os = "l4re",
         target_os = "haiku",
-        target_os = "vxworks"
+        target_os = "vxworks",
+        target_os = "miosix",
     ))]
     fn name_bytes(&self) -> &[u8] {
         unsafe { CStr::from_ptr(self.entry.d_name.as_ptr()).to_bytes() }
@@ -837,6 +856,7 @@ impl File {
         self.0.is_read_vectored()
     }
 
+    #[cfg(not(target_os = "miosix"))]
     pub fn read_at(&self, buf: &mut [u8], offset: u64) -> io::Result<usize> {
         self.0.read_at(buf, offset)
     }
@@ -854,6 +874,7 @@ impl File {
         self.0.is_write_vectored()
     }
 
+    #[cfg(not(target_os = "miosix"))]
     pub fn write_at(&self, buf: &[u8], offset: u64) -> io::Result<usize> {
         self.0.write_at(buf, offset)
     }
@@ -1012,6 +1033,7 @@ pub fn readdir(p: &Path) -> io::Result<ReadDir> {
                     target_os = "illumos",
                     target_os = "fuchsia",
                     target_os = "redox",
+                    target_os = "miosix",
                 )))]
                 end_of_stream: false,
             })
@@ -1082,7 +1104,12 @@ pub fn link(original: &Path, link: &Path) -> io::Result<()> {
     let original = cstr(original)?;
     let link = cstr(link)?;
     cfg_if::cfg_if! {
-        if #[cfg(any(target_os = "vxworks", target_os = "redox", target_os = "android"))] {
+        if #[cfg(any(
+            target_os = "vxworks", 
+            target_os = "redox", 
+            target_os = "android",
+            target_os = "miosix"
+        ))] {
             // VxWorks, Redox, and old versions of Android lack `linkat`, so use
             // `link` instead. POSIX leaves it implementation-defined whether
             // `link` follows symlinks, so rely on the `symlink_hard_link` test

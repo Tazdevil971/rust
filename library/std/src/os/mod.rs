@@ -76,5 +76,7 @@ pub mod redox;
 pub mod solaris;
 #[cfg(target_os = "vxworks")]
 pub mod vxworks;
+#[cfg(target_os = "miosix")]
+pub mod miosix;
 
 pub mod raw;

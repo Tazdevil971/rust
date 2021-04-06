@@ -9,6 +9,11 @@ standard library, and documentation.
 If you wish to _contribute_ to the compiler, you should read the
 [Getting Started][gettingstarted] section of the rustc-dev-guide instead.**
 
+## Miosix patches
+This fork of rust contains miosix specific patches, support is still very experimental so beware!
+
+At the moment the only supported target is `thumbv7em-miosix-eabihf`
+
 ## Quick Start
 
 Read ["Installation"] from [The Book].
@@ -41,7 +46,7 @@ by running `./x.py --help` or reading the [rustc dev guide][rustcguidebuild].
 2. Clone the [source] with `git`:
 
    ```sh
-   git clone https://github.com/rust-lang/rust.git
+   git clone https://github.com/Tazdevil971/rust.git
    cd rust
    ```
 

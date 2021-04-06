@@ -470,9 +470,8 @@ version = "0.1.0"
 
 [[package]]
 name = "cc"
-version = "1.0.60"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef611cc68ff783f18535d77ddd080185275713d852c4f5cbb6122c462a7a825c"
+version = "1.0.67"
+source = "git+https://github.com/Tazdevil971/cc-rs.git#eccfb2763fad0af931ce3634a948df21a26bc778"
 dependencies = [
  "jobserver",
 ]
@@ -1899,9 +1898,8 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.88"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03b07a082330a35e43f63177cc01689da34fbffa0105e1246cf0311472cac73a"
+version = "0.2.92"
+source = "git+https://github.com/Tazdevil971/libc.git#6848d76c75acf4137a07f0969d3a2403d544d36b"
 dependencies = [
  "rustc-std-workspace-core",
 ]

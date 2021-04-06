@@ -20,7 +20,7 @@ use crate::ptr;
 use crate::slice;
 use crate::str;
 use crate::sys::cvt;
-use crate::sys::fd;
+// use crate::sys::fd;
 use crate::sys_common::mutex::{StaticMutex, StaticMutexGuard};
 use crate::sys_common::rwlock::{RWLockReadGuard, StaticRWLock};
 use crate::vec;
@@ -444,7 +444,7 @@ pub fn current_exe() -> io::Result<PathBuf> {
     crate::fs::read_to_string("sys:exe").map(PathBuf::from)
 }
 
-#[cfg(any(target_os = "fuchsia", target_os = "l4re"))]
+#[cfg(any(target_os = "fuchsia", target_os = "l4re", target_os = "miosix"))]
 pub fn current_exe() -> io::Result<PathBuf> {
     use crate::io::ErrorKind;
     Err(io::Error::new_const(ErrorKind::Other, &"Not yet implemented!"))
@@ -593,7 +593,8 @@ pub fn home_dir() -> Option<PathBuf> {
         target_os = "ios",
         target_os = "emscripten",
         target_os = "redox",
-        target_os = "vxworks"
+        target_os = "vxworks",
+        target_os = "miosix",
     ))]
     unsafe fn fallback() -> Option<OsString> {
         None
@@ -603,7 +604,8 @@ pub fn home_dir() -> Option<PathBuf> {
         target_os = "ios",
         target_os = "emscripten",
         target_os = "redox",
-        target_os = "vxworks"
+        target_os = "vxworks",
+        target_os = "miosix",
     )))]
     unsafe fn fallback() -> Option<OsString> {
         let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {

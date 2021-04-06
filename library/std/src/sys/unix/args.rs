@@ -250,3 +250,21 @@ mod imp {
         Args { iter: res.into_iter(), _dont_send_or_sync_me: PhantomData }
     }
 }
+
+#[cfg(target_os = "miosix")]
+mod imp {
+    use super::Args;
+    use crate::marker::PhantomData;
+
+    pub unsafe fn init(_argc: isize, _argv: *const *const u8) {}
+
+    pub fn cleanup() {}
+    
+    pub fn args() -> Args {
+        // Miosix doesn't have arguments
+        Args {
+            iter: Vec::new().into_iter(),
+            _dont_send_or_sync_me: PhantomData
+        }
+    }
+}
