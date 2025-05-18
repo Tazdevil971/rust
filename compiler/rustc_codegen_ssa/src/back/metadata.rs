@@ -201,6 +201,28 @@ pub(super) fn get_metadata_xcoff<'a>(path: &Path, data: &'a [u8]) -> Result<&'a 
 }
 
 pub(crate) fn create_object_file(sess: &Session) -> Option<write::Object<'static>> {
+
+    // FIXME(davide.mor): Quick hack to make this work on the r5900
+    if sess.target.arch.as_ref() == "mips64" && sess.target.options.cpu.as_ref() == "r5900" {
+        let endianness = match sess.target.options.endian {
+            Endian::Little => Endianness::Little,
+            Endian::Big => Endianness::Big,
+        };
+
+        let mut file = write::Object::new(BinaryFormat::Elf, Architecture::Mips64_N32, endianness);
+
+        let mut e_flags = elf::EF_MIPS_CPIC | elf::EF_MIPS_ABI2 | elf::EF_MIPS_ARCH_3;
+        if sess.target.options.relocation_model != RelocModel::Static {
+            e_flags |= elf::EF_MIPS_PIC;
+        }
+
+        let os_abi = elf::ELFOSABI_NONE;
+        let abi_version = 0;
+    
+        file.flags = FileFlags::Elf { os_abi, abi_version, e_flags };
+        return Some(file);
+    }
+
     let endianness = match sess.target.options.endian {
         Endian::Little => Endianness::Little,
         Endian::Big => Endianness::Big,
