@@ -81,6 +81,10 @@ cfg_select! {
         mod zkvm;
         pub use self::zkvm::*;
     }
+    target_os = "eva" => {
+        mod eva;
+        pub use self::eva::*;
+    }
     _ => {
         mod unsupported;
         pub use self::unsupported::*;

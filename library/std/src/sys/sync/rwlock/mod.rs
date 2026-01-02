@@ -28,6 +28,10 @@ cfg_select! {
         mod solid;
         pub use solid::RwLock;
     }
+    target_os = "eva" => {
+        mod eva;
+        pub use eva::RwLock;
+    }
     _ => {
         mod no_threads;
         pub use no_threads::RwLock;

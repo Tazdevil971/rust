@@ -40,6 +40,10 @@ cfg_select! {
         mod xous;
         pub use xous::Mutex;
     }
+    target_os = "eva" => {
+        mod eva;
+        pub use eva::Mutex;
+    }
     _ => {
         mod no_threads;
         pub use no_threads::Mutex;

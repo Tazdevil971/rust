@@ -195,6 +195,13 @@ pub(crate) mod key {
             pub(super) use moto_rt::tls::{Key, get, set};
             use moto_rt::tls::{create, destroy};
         }
+        target_os = "eva" => {
+            mod racy;
+            mod eva;
+            pub(super) use racy::LazyKey;
+            pub(super) use eva::{Key, set, get};
+            use eva::{create, destroy};
+        }
         _ => {}
     }
 }
